@@ -77,6 +77,14 @@ namespace CFlat
             return false;
         }
 
+        public static TokenStream Tokenize(StringBuilder input, int startIndex, int length, string fileName)
+        {
+            var result = Tokenize(input, startIndex, length);
+            result.FileName = fileName;
+
+            return result;
+        }
+
         public static TokenStream Tokenize(StringBuilder input, int startIndex, int length)
         {
             TokenStream result = default;

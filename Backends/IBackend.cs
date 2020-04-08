@@ -10,7 +10,7 @@ namespace CFlat.Backends
 {
     public interface IBackend
     {
-        void Compile(Ast ast);
-        void Run();
+        void Load();
+        Type Compile(Ast ast, StringBuilder errors);
     }
 }

@@ -261,7 +261,7 @@ namespace CFlat
 
             if (!File.Exists(path))
             {
-                ReportError(ref input, "Could not include: '" + path + "'.");
+                ReportError(ref input, "Could not include: '" + path + "'. File not found.");
                 return false;
             }
 
@@ -313,9 +313,9 @@ namespace CFlat
             tokenIndex += 2;
 
             INode expression = null;
-            if (!ParseExpression(ref input, ref tokenIndex, out expression))
+            if (!ParseExpression(ref input, ref tokenIndex, out expression, out var foundExpression) && !foundExpression)
             {
-                ReportError(ref input, "Local declaration: Expression expected.");
+                ReportError(ref input, "Local declaration '" + localName + " := (...)' is missing it's right hand side.");
                 return false;
             }
 
@@ -436,13 +436,18 @@ namespace CFlat
 
         private bool ParseExpression(ref TokenStream input, ref int tokenIndex, out INode node)
         {
+            return ParseExpression(ref input, ref tokenIndex, out node, out var _);
+        }
+
+        private bool ParseExpression(ref TokenStream input, ref int tokenIndex, out INode node, out bool foundExpression)
+        {
             node = null;
 
-            var isExpression = ParseSubExpression(ref input, ref tokenIndex, out var firstOperand);
-            if (!isExpression)
+            foundExpression = ParseSubExpression(ref input, ref tokenIndex, out var firstOperand);
+            if (!foundExpression)
                 return false;
 
-            node = new Expression();
+            node = new Expression { Root = _root };
             node.Add(firstOperand);
 
             var stack = new Stack<NodeWithTokenType>();            
@@ -453,13 +458,12 @@ namespace CFlat
                 var currentToken = PeekToken(ref input, tokenIndex);
                 if (currentToken.Type != TokenType.Operator)
                 {
-                    ReportError(ref input, "Operator expected: Got '" + currentToken.Type + "'.");
                     return false;
                 }
 
                 tokenIndex++;
 
-                var op = new Operator(currentToken);
+                var op = new Operator(currentToken) { Root = _root };
 
                 if (stack.Count > 0)
                 {
@@ -505,7 +509,7 @@ namespace CFlat
                 var hasOperand = ParseSubExpression(ref input, ref tokenIndex, out var operand);
                 if (!hasOperand)
                 {
-                    ReportError(ref input, "Constant or call expected.");
+                    ReportError(ref input, "Expressions need to end with a constant or a call, not with an operator.");
                     return false;
                 }
 
@@ -559,8 +563,10 @@ namespace CFlat
 
             node = new Placeholder
             {
-                rhythm = rhythm,
-                pitchExpression = subExpression
+                Root = _root,
+                StartToken = peek,
+                Duration = rhythm,
+                PitchExpression = subExpression
             };
 
             if (subExpression != null)
@@ -610,7 +616,7 @@ namespace CFlat
             if (questionMark.Type == TokenType.QuestionMark)
                 return false;
             
-            var sequence = new NoteSequence();
+            var sequence = new NoteSequence { Root = _root };
 
             while (true)
             {
@@ -634,12 +640,13 @@ namespace CFlat
 
                 var duration = DurationFromNoteHead(noteHead);
 
-                var expression = new Expression();
+                var expression = new Expression { Root = _root };
                 expression.Add(subExpression);
 
                 var note = new Note
                 {
-                    Rhythm = duration,
+                    Root = _root,
+                    Duration = duration,
                     Expression = expression
                 };
 
@@ -699,6 +706,7 @@ namespace CFlat
 
             node = new NoteSequenceVariation
             {
+                Root = _root,
                 SourceIdentifier = sourceIdentifier,
                 Expressions = expressions
             };
@@ -738,6 +746,7 @@ namespace CFlat
 
             node = new Constant
             {
+                Root = _root,
                 Type = ConstantType.Int,
                 Value = token
             };
@@ -915,7 +924,7 @@ namespace CFlat
 
         public Ast Parse(TokenStream input, out StringBuilder errors)
         {
-            _root = new Ast();
+            _root = new Ast { FileName = input.FileName };
             _state = ParserState.Root;
             _errors.Clear();
 
@@ -944,6 +953,15 @@ namespace CFlat
                 }
 
                 _state = nextState;
+            }
+
+            if (tokenIndex < endIndex)
+            {
+                var currentToken = PeekToken(ref input, tokenIndex);
+                if (currentToken.Type != TokenType.Semicolon)
+                {
+                    ReportError(ref input, "Not sure what to do with '" + currentToken + "'.");
+                }
             }
 
             errors = _errors;

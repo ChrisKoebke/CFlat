@@ -9,6 +9,9 @@ namespace CFlat.Syntax
 {
     public class Ast : Node
     {
+        public Ast() => Root = this;
+
         public override NodeType NodeType => NodeType.Ast;
+        public string FileName;
     }
 }

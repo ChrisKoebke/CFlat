@@ -10,7 +10,8 @@ namespace CFlat.Syntax
     {
         public override NodeType NodeType => NodeType.Placeholder;
 
-        public float rhythm = -1;
-        public INode pitchExpression;
+        public Token StartToken;
+        public float Duration = -1;
+        public INode PitchExpression;
     }
 }

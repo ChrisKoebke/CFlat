@@ -10,6 +10,7 @@ namespace CFlat.Syntax
     public interface INode
     {
         NodeType NodeType { get; }
+        Ast Root { get; set; }
         INode Parent { get; set; }
         IList<INode> Children { get; }
         void Add(INode child);

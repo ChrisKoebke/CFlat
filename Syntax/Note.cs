@@ -10,7 +10,7 @@ namespace CFlat.Syntax
     {
         public override NodeType NodeType => NodeType.Note;
 
-        public float Rhythm;
+        public float Duration;
         public Expression Expression;
     }
 }
