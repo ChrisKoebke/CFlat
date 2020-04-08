@@ -450,7 +450,7 @@ namespace CFlat
             node = new Expression { Root = _root };
             node.Add(firstOperand);
 
-            var stack = new Stack<NodeWithTokenType>();            
+            var stack = new Stack<NodeTokenPair>();            
             var bracketDepth = 0;
 
             while (!IsEndOfExpression(ref input, ref tokenIndex))
@@ -482,14 +482,14 @@ namespace CFlat
                     }
                 }
 
-                stack.Push(new NodeWithTokenType { Node = op, Type = TokenType.Operator });
+                stack.Push(new NodeTokenPair { Node = op, Type = TokenType.Operator });
 
                 var bracket = PeekToken(ref input, tokenIndex);
                 if (bracket.Type == TokenType.OpenBracket && bracket.Equals("("))
                 {
                     bracketDepth++;
                     tokenIndex++;
-                    stack.Push(new NodeWithTokenType { Type = TokenType.OpenBracket });
+                    stack.Push(new NodeTokenPair { Type = TokenType.OpenBracket });
                     continue;
                 }
                 else if (bracket.Type == TokenType.CloseBracket && bracket.Equals(")"))
