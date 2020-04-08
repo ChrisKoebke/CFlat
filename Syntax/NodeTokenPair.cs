@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CFlat
+namespace CFlat.Syntax
 {
-    public class NodeWithTokenType
+    public class NodeTokenPair
     {
         public INode Node;
         public TokenType Type;
