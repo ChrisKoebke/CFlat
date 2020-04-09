@@ -27,6 +27,7 @@ namespace CFlat
         {
             Console.WriteLine("Loading backend...");
 
+            ArenaAllocator.Init();
             _backend = Backend.Create<CSharpBackend>();
             _directory = args[0];
 
@@ -45,7 +46,15 @@ namespace CFlat
 
                 while (_sourceFileQueue.Count > 0)
                 {
-                    Run(_sourceFileQueue.Dequeue());
+                    ArenaAllocator.Free();
+                    try
+                    {
+                        Run(_sourceFileQueue.Dequeue());
+                    }
+                    catch (OutOfMemoryException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
                 }
             }
         }

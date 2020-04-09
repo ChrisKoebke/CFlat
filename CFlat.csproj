@@ -80,6 +80,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HeapAllocator.cs" />
+    <Compile Include="ArenaAllocator.cs" />
     <Compile Include="Backends\Backend.cs" />
     <Compile Include="Backends\CSharpBackend.cs" />
     <Compile Include="Backends\IBackend.cs" />
